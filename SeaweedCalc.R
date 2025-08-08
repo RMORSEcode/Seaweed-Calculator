@@ -38,13 +38,32 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ### 1 FARM PRACTICES ###
                              helpText(h3("1) Farm Practices")),
                              ## Name
-                             textAreaInput("farmname", div(strong("Project Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=1, placeholder = NULL),
+                             textAreaInput("farmname", div(strong("Project Name:"), " Please enter the name of the farm"),value = "", width="100%", rows=1, placeholder = NULL),
                              helpText(br()),
-                             ## Ploidy
-                             selectInput("ploidy", div(strong("Oyster Ploidy:")," Please select the ploidy of the oysters that were harvested", em("(will not affect calculation)")),c("Diploid", "Triploid", "Combination"), width="100%"),
+                             textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=1, placeholder = NULL),
+                             leafletOutput("mymap", width="100%", height=400),
+                             ## Location table
+                             tableOutput('loctable'),
+                             ## Species
+                             selectInput("species", div(strong("Species:")," Please select the species of seaweed that was harvested"),c("Sugar kelp (Saccharina latissima)", "..."), width="100%"),
                              helpText(br()),
                              
-                             
+                             ## Number
+                             helpText(br()),
+                             numericInput("Hlength", div(strong("Length of line harvested (m):")," Please enter the total length in meters of line harvested at the selected size"), 0, min=0, max=NA, width="100%"),
+                             helpText(br()),
+                             dateRangeInput("Htime", div(strong("Period of harvest (yyyy-mm-dd):"), em("(does not affect calculation)")), start=NULL, end=NULL, min=Sys.Date()-(5*365), max=Sys.Date(), startview = "month", width="100%"),
+                             br(),
+                             ## Units
+                             radioButtons(
+                               "units",
+                               div(strong("Units:")," Select the units for nutrient removal"),
+                               choices =c("Pounds (lbs)", "Kilograms (kg)"),
+                               selected ="Pounds (lbs)",
+                               inline = T,
+                               width="100%"),
+                             helpText(br()),
+                             tableOutput("mytable")
                              
                     )
                   )
@@ -78,64 +97,45 @@ server <- function(input, output, session) {
         editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   })
   
-  table <- reactive({
-    taval=1.42E-05
-    tbval=2.60727827
-    saval=0.00039042
-    sbval=2.579747757
-    if(input$seedonly==T){
-      tdw=taval*(input$seedSizeOut)^tbval
-      sdw=saval*(input$seedSizeOut)^sbval
-      tNi=0.0770*tdw
-      sNi=0.0019*sdw
-      tPi=0.008345*tdw
-      sPi=0.000438*sdw
-      #convert grams N to lbs or kg
-      cnvrt=ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
-      tN=round((tNi*cnvrt*input$seedNum),1)
-      sN=round((sNi*cnvrt*input$seedNum),1)
-      tP=round((tPi*cnvrt*input$seedNum),1)
-      sP=round((sPi*cnvrt*input$seedNum),1)
-      df=data.frame(matrix(c(sN, tN, tN+sN), nrow=1, ncol=3))
-      colnames(df)=c("Shell", "Tissue", "Total")
-      df=rbind(df, list(Shell=sP, Tissue=tP, Total=sP+tP))
-      df$Units=input$units
-      row.names(df)=c("Nitrogen", "Phosphorus")
-    }
+  observeEvent(input$mymap_draw_new_feature,{
+    feature <- input$mymap_draw_new_feature
     
-    else{
-      tdw1=taval*(input$sizeIn)^tbval
-      sdw1=saval*(input$sizeIn)^sbval
-      tdw2=taval*(input$sizeOut*25.4)^tbval
-      sdw2=saval*(input$sizeOut*25.4)^sbval
-      tNi1=0.0770*tdw1
-      sNi1=0.0019*sdw1
-      tPi1=0.008345*tdw1
-      sPi1=0.000438*sdw1
-      tNi2=0.0770*tdw2
-      sNi2=0.0019*sdw2
-      tPi2=0.008345*tdw2
-      sPi2=0.000438*sdw2
-      #convert grams N to lbs or kg
-      cnvrt=ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
-      tN1=round((tNi1*cnvrt*input$HNum),1)
-      sN1=round((sNi1*cnvrt*input$HNum),1)
-      tP1=round((tPi1*cnvrt*input$HNum),1)
-      sP1=round((sPi1*cnvrt*input$HNum),1)
-      tN2=round((tNi2*cnvrt*input$HNum),1)
-      sN2=round((sNi2*cnvrt*input$HNum),1)
-      tP2=round((tPi2*cnvrt*input$HNum),1)
-      sP2=round((sPi2*cnvrt*input$HNum),1)
-      sN=sN2-sN1
-      tN=tN2-tN1
-      sP=sP2-sP1
-      tP=tP2-tP1
-      df=data.frame(matrix(c(sN, tN, tN+sN), nrow=1, ncol=3))
-      colnames(df)=c("Shell", "Tissue", "Total")
-      df=rbind(df, list(Shell=sP, Tissue=tP, Total=sP+tP))
-      df$Units=input$units
-      row.names(df)=c("Nitrogen", "Phosphorus")
-    }
+    output$loctable <- renderTable(
+      data.frame("Lon"=feature$geometry$coordinates[[1]],"Lat"=feature$geometry$coordinates[[2]]),
+      striped = T,
+      hover = F,
+      bordered = T,
+      spacing = c("s", "xs", "m", "l"),
+      width = "auto",
+      align = NULL,
+      rownames = FALSE,
+      colnames = TRUE,
+      digits = 4,
+      na = "NA",
+      quoted = FALSE
+    )
+  })
+  
+  table <- reactive({
+    # S. latissima N percent (g N /g dry weight)
+    Npctlo=1.04
+    Npcthi=3.82
+    # g wet weight to g dry weight ratio 9:1
+    dw2ww=1/9
+    # g WW / m of line (ESTIMATE NEEDS REVISION)
+    gWWperM=500
+    Nlo=Npctlo*dw2ww*gWWperM*input$Hlength
+    Nhi=Npcthi*dw2ww*gWWperM*input$Hlength
+    
+    #convert grams N to lbs or kg
+    cnvrt=ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
+    tNlo=round((Nlo*cnvrt),1)
+    tNhi=round((Nhi*cnvrt),1)
+    
+    df=data.frame(matrix(c(tNlo, tNhi), nrow=1, ncol=2))
+    colnames(df)=c("Low estimate", "High estimate")
+    df$Units=input$units
+    row.names(df)=c("Nitrogen")
     df
   })
   
