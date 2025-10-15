@@ -1,0 +1,110 @@
+---
+title: |
+  ![](noaa-emblem-rgb-sm2-2022.png){width=0.75in}
+  Seaweed Nutrient Removal Calculator
+output: pdf_document
+date: "`r format(Sys.Date(),'%B %e, %Y')`"
+params: 
+  Location: NA
+  Species: NA
+  Length: NA
+  table: 'NULL'
+  Farm: NA
+  Date: NA
+  Units: NA 
+  HLat: NA
+  HLon: NA
+---
+
+```{r, echo = F, warning=FALSE, echo=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+```
+
+```{r setup, include=FALSE}
+# A killPrefix hook.
+default_output_hook <- knitr::knit_hooks$get("output")
+knitr::knit_hooks$set( output = function(x, options) {
+  
+  comment <- knitr::opts_current$get("comment")
+  if( is.na(comment) ) comment <- ""
+  can_null <- grepl( paste0( comment, "\\s*\\[\\d?\\]" ),
+                     x, perl = TRUE)
+  do_null <- isTRUE( knitr::opts_current$get("null_prefix") )
+  if( can_null && do_null ) {
+    # By default R print output aligns at the left brace.
+    align_index <- regexpr( "\\]", x )[1] - 1
+    # Two cases: start or newline
+    re <- paste0( "^.{", align_index, "}\\]")
+    rep <- comment
+    x <- gsub( re, rep,  x )
+    re <- paste0( "\\\n.{", align_index, "}\\]")
+    rep <- paste0( "\n", comment )
+    x <- gsub( re, rep,  x )
+  }
+  default_output_hook( x, options )
+})
+
+knitr::opts_template$set("kill_prefix"=list(comment=NA, null_prefix=TRUE))
+# knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(opts.label="kill_prefix")
+```
+
+# **Calculator Inputs**  
+<!-- ### Universal Options ### -->
+**Name of the Farm:**  
+`r params[["Farm"]]`  
+
+**Name of the water body where the seaweed was harvested:**  
+`r params[["Location"]]`  
+
+**Nursery location (latitude, longitude):**  
+`r c(params[["HLat"]], params[["HLon"]])`  
+
+**Seaweed Species:**  
+`r params[["Species"]]`  
+
+**Harvest Date (YYYY-MM-DD):**  
+`r params[["Date"]]`  
+
+**Length of Line Harvested:**  
+`r params[["Length"]]`  
+
+
+# **Calculated Seaweed Nutrient Removal**  
+```{r, tidy='styler', echo=FALSE}
+knitr::kable(params[["table"]], 
+             caption="Nitrogen Removal")
+```
+
+
+# **Summary**
+Seaweed incorporate nutrients into their tissues as they grow. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction. The harvest of `r params$table[[6]]` `r params[["Units"]]` of seaweed is expected to result in the removal of a total of `r params$table[[3]]` pounds (lbs) of nitrogen from coastal Maine waters during the harvest period.
+
+# **Federal Regulatory Nexus:**  
+Public Interest Factor(s): (1)Water Quality; (2)General Environmental Concerns; (3) Fish and wildlife values.  
+
+Rivers and Harbors Act Section 10 public interest review factors related to water quality, general environmental concerns and fish and wildlife values. Clean Water Act Section 303 provisions related to managing nutrient pollution in the Waters of the U.S.; Magnuson-Stevens Act provisions related to Essential Fish Habitat; The Fish and Wildlife Coordination Act provisions related to the development of measures to protect, develop, and improve wildlife and their habitat.  
+
+# **Data Contributors**  
+
+
+
+# **Supporting Literature**  
+
+
+
+# **Disclaimer**  
+This is a scientific product and is not an official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.  
+
+
+# **Calculator Version:**  
+```{r, echo=FALSE}
+releases <- gh("GET /repos/{owner}/{repo}/releases", 
+               owner = "RMORSEcode",
+               repo = "Seaweed-Calculator")
+print(releases[[1]][["name"]])
+```

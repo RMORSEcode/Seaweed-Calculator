@@ -6,6 +6,7 @@ library(leaflet.providers)
 # library(shinyscreenshot)
 library(ggplot2)
 library(mgcv)
+library(lubridate)
 library(formatR)
 library(tinytex)
 library(gh)
@@ -45,10 +46,9 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              leafletOutput("mymap", width="100%", height=400),
                              ## Location table
                              tableOutput('loctable'),
+                             helpText(br()),
                              ## Species
                              selectInput("species", div(strong("Species:")," Please select the species of seaweed that was harvested"),c("Sugar kelp (Saccharina latissima)", "..."), width="100%"),
-                             helpText(br()),
-                             
                              ## Number
                              helpText(br()),
                              numericInput("Hlength", div(strong("Length of line harvested (ft):")," Please enter the total length in feet of line harvested at the selected size"), 0, min=0, max=NA, width="100%"),
@@ -66,9 +66,81 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                inline = T,
                                width="100%"),
                              helpText(br()),
-                             tableOutput("mytable")
-                             
-                    )
+                             tableOutput("mytable"),
+                             br(),
+                             downloadButton(
+                               outputId = "downloader",
+                               label = "Download PDF Report"
+                             ),
+                    ),
+                    tabPanel("About", 
+                             tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
+                             titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Aquaculture Nutrient Removal Calculator"),
+                             helpText(br()),
+                             div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
+                                  p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
+                                  p("The Seaweed Nutrient Removal Calculator can be used for new permit applications based on estimated production value, or to provide information on existing farms from actual harvest numbers. The grower provides information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- The date of harvest"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- The length of line harvested"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("- Farm location will be included as inputs for use in generating the report, but will not affect the calculation.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                             ),
+                             helpText(br()),
+                             tags$p(
+                               h4("Background"),
+                               helpText(strong("Excess nutrients in coastal waters"), style = "font-size:18px;"),
+                               p("Nitrogen (N) and phosphorus (P) are essential nutrients, but excess levels of these nutrients in coastal waters can lead to algal blooms, low oxygen concentrations, and other detrimental effects. Like all plants, seaweed incorporates nutrients into its tissue as it grows. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction."
+                               ),
+                               tags$img(src='infographic.png', width = "100%", alt="This illustration shows a landscape in the background with agricultural fields, houses with lawns, and a river washing nutrients from those sources into an underwater scene in the foreground where the nitrogen is assimilated by plankton and seaweed."),
+                               helpText(br()),
+                               helpText(strong("The Seaweed Nutrient Removal Calculator"), style = "font-size:18px;"),
+                               p("The calculator is a tool designed for seaweed farmers and resource managers to inform seaweed aquaculture permitting. Resource managers have expressed interest in easy-to-use tools that produce location and operation-appropriate values for the environmental benefits, or ecosystem services, seaweed farms provide. The calculator provides estimated values for nutrient removal in a format that aligns with the seaweed aquaculture permitting process."
+                               ),
+                               p("The nutrient removal calculations are based on relationships of seaweed dry weight-to-length and the average nitrogen and phoshphorous concentrations in seaweed tissue. First, we estimate the weight of the seaweed based on the day of year it is harvested and typical growing conditions on a farm. The weight estimates are based on a non-linear generalized additive model output of biomass regressed on day of the year. Next, the nutrient portion of total seaweed weight is calculated using the output of  nitrogen concentration value for tissue. This result is scaled to the total biomass harvested, as input by the user based on length of line harvested and harvest date."
+                               ),
+                               # p("We have synthesized available literature for eastern oyster farms across the Northeast region, from North Carolina to Maine, and applied methodology used by the Chesapeake Bay Program to calculate nutrient removal at harvest ",
+                               #   tags$a(style="font-weight:bold", target="_blank", href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0310062",
+                               #          "(Rose et al. 2024)."),
+                               #   " Variability in oyster tissue and shell nutrient concentration was low, and an assessment of farm location, ploidy, and cultivation practice (with vs. without gear) suggested that a single average value could reasonably be applied across all farms."
+                               # ),
+                             ),
+                             # h6(tags$a(target="_blank", href="https://doi.org/10.5281/zenodo.11966672",
+                             #           "Access publicly available data used to create this tool >")
+                             # ),
+                             br(),
+                             h4("Location of seaweed", em("(Saccharina latissima)"), "samples from aquaculture farm sites used to develop the calculator"
+                             ),
+                             br(),
+                             leafletOutput("contmap", width="100%", height=400),
+                             br(),
+                             tags$p(
+                               h4("Project Team"),
+                               tags$a(target="_blank", href="https://sites.une.edu/byronlab/", "Carrie Byron,"),
+                               tags$a(target="_blank", href="https://unity.edu/pineland/meet-the-team/", "Gretchen Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
+                               tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
+                               tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
+                             ),
+                             div( style = "border-style: solid; border-radius: 10px; border-color: #0085CA; background-color: #0085CA;",
+                                  p("Send questions or comments to:",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
+                                  p("ES.Tools@noaa.gov",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
+                             ),
+                             tags$p(
+                               h4("References:"),
+                               p("Bolduc, W., Griffin, R.M. & Byron, C.J. Consumer willingness to pay for farmed seaweed with education on ecosystem services. J Appl Phycol 35, 911–919 (2023). https://doi.org/10.1007/s10811-023-02914-3"
+                                 ),
+                               p("Grebe, G. S., Byron, C. J., Brady, D. C., St. Gelais, A. T., & Costa-Pierce, B. A. (2021). The effect of distal-end trimming on Saccharina latissima morphology, composition, and productivity. Journal of the World Aquaculture Society, 52(5), 1081–1098. https://doi.org/10.1111/jwas.12814"
+                                 ),
+                               p("Grebe, G.S., Byron, C.J., Brady, D.C. et al. The nitrogen bioextraction potential of nearshore Saccharina latissima cultivation and harvest in the Western Gulf of Maine. J Appl Phycol 33, 1741–1757 (2021). https://doi.org/10.1007/s10811-021-02367-6"
+                                 ),
+                               p("Rose, J. M., Morse, R., & Schillaci, C. (2024). Development and application of an online tool to quantify nitrogen removal associated with harvest of cultivated eastern oysters. PLOS ONE, 19(9), e0310062. https://doi.org/10.1371/JOURNAL.PONE.0310062"
+                                 ),
+                               p("Schutt, E., Francolini, R., Price, N., Olson, Z., & Byron, C. J. (2023). Supporting ecosystem services of habitat and biodiversity in temperate seaweed (Saccharina spp.) farms. Marine Environmental Research, 191, 106162. https://doi.org/10.1016/J.MARENVRES.2023.106162"
+                                 ),
+                               br(),
+                               h4("Disclaimer:"),
+                               p("This is a scientific product and is not an official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government."
+                               ),
+                             ),
+                    ),
                   )
                 )
 )
@@ -85,8 +157,19 @@ server <- function(input, output, session) {
   })
   
   ## Load GAM models to estimate biomass and percent N at time (week)
-  biomass_model <- readRDS("GAMpctN.rds")
-  N_model <- readRDS("GAMbiomass.rds")
+  N_model <- readRDS("GAMpctN.rds")
+  biomass_model <- readRDS("GAMbiomass.rds")
+  
+  ## Lat/Lon data for farms ussed to develop tool
+  stations=readxl::read_xlsx("Swd_Location_data.xlsx",sheet='final', range='A1:F5')
+  
+  # add  data contributor map to 'about' page
+  output$contmap <- renderLeaflet({
+    leaflet(height="100%") %>%
+      addTiles() %>%
+      setView(lng = -69.95, lat = 43.65, zoom = 9) %>%
+      addMarkers(stations$Longitude, stations$Latitude, popup = stations$Waterbody_Name, label =stations$Site )
+  })
   
   output$mymap <- renderLeaflet({
     leaflet(height="50%") %>%
@@ -95,7 +178,8 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.OceanBasemap",group = "Ocean Basemap", options = providerTileOptions(opacity = 0.6)) %>%
       # addProviderTiles(providers$Esri.WorldImagery, options = providerTileOptions(opacity = 0.4)) %>%
       # fitBounds(-70, 40, -65, 45) %>%
-      setView(lng = -68.5, lat = 43, zoom = 7) %>%
+      # setView(lng = -68.5, lat = 43, zoom = 7) %>%
+      setView(lng = -69.95, lat = 43.65, zoom = 9) %>%
       addDrawToolbar(
         targetGroup='Selected',
         polylineOptions=FALSE,
@@ -127,39 +211,43 @@ server <- function(input, output, session) {
   })
   
   table <- reactive({
-    # S. latissima N percent (g N /g dry weight)
+    # S. latissima N content (g N /g dry weight)
     Npctlo=0.02
     Npcthi=0.04
     # g wet weight to g dry weight ratio 9:1
-    dw2ww=0.1111111 #1/9
+    dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
     ft2m=0.3048 #convert feet (input length) to meter
     
     # g WW / m of line (ESTIMATE NEEDS REVISION)
     # gWWperM=5000 # use gam predict(kg/m) here
-    
     # GROWOUT_WEEK=week(input$HarvestDate)
     # weekin=data.frame(GROWOUT_WEEK)
     # gWWperM=(predict(biomass_model, weekin))*1000
-    DOY=yday(input$HarvestDate)
-    doy=data.frame(DOY)
-    
-    biomass.mod=(predict(biomass_model, doy))
-    gWWperM=exp(biomass.mod)*1000 # model prediction kg/m -> g/m
-    
-    Ngam=predict(N_model, doy)/100
-    Nmodel=Ngam * dw2ww * gWWperM * input$Hlength * ft2m
-    Nlo=Npctlo*dw2ww*gWWperM*input$Hlength*ft2m
-    Nhi=Npcthi*dw2ww*gWWperM*input$Hlength*ft2m
+    # DOY=yday(input$HarvestDate)
+    day_of_year_shifted=ifelse(month(input$HarvestDate) < 12,
+                yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
+                yday(input$HarvestDate)        # Dec remains as is
+    )
+    # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
+    sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy, se=F))
+    kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+    Ngam=predict(N_model, sdoy, se=F)
+    Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength * ft2m * 1000 # kg to g
+    Nlo=Npctlo*dw2ww*kgWWperM*input$Hlength*ft2m * 1000# kg to g
+    Nhi=Npcthi*dw2ww*kgWWperM*input$Hlength*ft2m * 1000# kg to g
     
     #convert grams N to lbs or kg
     cnvrt=ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
     tNlo=round((Nlo*cnvrt),1)
     tNhi=round((Nhi*cnvrt),1)
     tNmodel=round((Nmodel*cnvrt),1)
-    df=data.frame(matrix(c(tNlo, tNhi, tNmodel), nrow=1, ncol=3))
-    colnames(df)=c("Low estimate", "High estimate", "model")
+    Bio.model=kgWWperM * 1000 * input$Hlength * ft2m
+    tBio=round((Bio.model*cnvrt),-1)
+    df=data.frame(matrix(c(tNlo, tNhi, tNmodel, Ngam*100,  kgWWperM, tBio), nrow=1, ncol=6))
+    colnames(df)=c("Lo", "Hi", "Estimate (unit)","N (%DW)", "WW biomass (kg/m)", "Harvested Biomass (unit)")
     df$Units=input$units
-    row.names(df)=c("Nitrogen Removed")
+    row.names(df)=c("Nitrogen Removed:")
     df
   })
   
@@ -167,6 +255,34 @@ server <- function(input, output, session) {
     renderTable(
       table(),
       rownames = TRUE
+    )
+  
+  output$downloader <- 
+    downloadHandler(
+      paste0(Sys.Date(),"_Seaweed_Farm_Nitrogen_Report.pdf"),
+      content = 
+        function(file)
+        {
+          rmarkdown::render(
+            input = "reportout.Rmd",
+            output_file = "built_report.pdf",
+            params = list(
+              Location=input$projloc,
+              Species=input$species,
+              Units=input$units, 
+              Length=input$Hlength,
+              Farm=input$farmname,
+              Date=input$Harvestdate,
+              table = table(),
+              HLat=input$mymap_draw_new_feature$geometry$coordinates[[2]],
+              HLon=input$mymap_draw_new_feature$geometry$coordinates[[1]]
+            )
+          ) 
+          readBin(con = "built_report.pdf", 
+                  what = "raw",
+                  n = file.info("built_report.pdf")[, "size"]) %>%
+            writeBin(con = file)
+        }
     )
 }
 
