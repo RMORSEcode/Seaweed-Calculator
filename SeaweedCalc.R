@@ -73,9 +73,40 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                label = "Download PDF Report"
                              ),
                     ),
+                    tabPanel("Harvest Optimizer",
+                             tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
+                             titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
+                             helpText(br()),
+                             ### add text box with black border ### "border-style: solid; border-color: gray; background-color: #838B8B;"
+                             div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
+                                  p("The Harvest optimizer predicts the amount of nitrogen removed from Maine, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("To use the tool, please enter a length of line to harvest and drag the date slider to see how the amount of nitrogen removed varies with time.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;")),
+                             helpText(br()),
+                             helpText(br()),
+                             numericInput("Hlength2", div(strong("Length of line harvested (ft):")," Please enter the total length in feet of line harvested at the selected size"), 0, min=0, max=NA, width="100%"),
+                             helpText(br()),
+                             sliderInput(
+                               inputId = "monthSlider",
+                               label = "Range",
+                               min = as.Date("2021-01-01"),
+                               max = as.Date("2021-07-31"),
+                               value = c(as.Date("2021-02-01")),
+                               timeFormat = "%m/%d",
+                               step=5
+                             ),
+                             tableOutput("OptimizeTable"),
+                             # fluidRow(
+                             #   splitLayout(style = "border: 1px solid silver:", cellWidths = c(300,300), 
+                             #               plotOutput("OptiBiomassplot", width="80%"), 
+                             #               plotOutput("OptiNplot", width="80%")
+                             #   )
+                             # )
+                             plotOutput("OptiNplot", width="50%"),
+                    ),
+                    
                     tabPanel("About", 
                              tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
-                             titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Aquaculture Nutrient Removal Calculator"),
+                             titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
@@ -115,7 +146,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tags$p(
                                h4("Project Team"),
                                tags$a(target="_blank", href="https://sites.une.edu/byronlab/", "Carrie Byron,"),
-                               tags$a(target="_blank", href="https://unity.edu/pineland/meet-the-team/", "Gretchen Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
+                               tags$a(target="_blank", href="https://unity.edu/pineland/meet-the-team/#:~:text=Dr.%20Gretchen%20Grebe,and%20exploring%20outside.", "Gretchen Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
                                tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
                                tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
                              ),
@@ -126,15 +157,15 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tags$p(
                                h4("References:"),
                                p("Bolduc, W., Griffin, R.M. & Byron, C.J. Consumer willingness to pay for farmed seaweed with education on ecosystem services. J Appl Phycol 35, 911–919 (2023). https://doi.org/10.1007/s10811-023-02914-3"
-                                 ),
+                               ),
                                p("Grebe, G. S., Byron, C. J., Brady, D. C., St. Gelais, A. T., & Costa-Pierce, B. A. (2021). The effect of distal-end trimming on Saccharina latissima morphology, composition, and productivity. Journal of the World Aquaculture Society, 52(5), 1081–1098. https://doi.org/10.1111/jwas.12814"
-                                 ),
+                               ),
                                p("Grebe, G.S., Byron, C.J., Brady, D.C. et al. The nitrogen bioextraction potential of nearshore Saccharina latissima cultivation and harvest in the Western Gulf of Maine. J Appl Phycol 33, 1741–1757 (2021). https://doi.org/10.1007/s10811-021-02367-6"
-                                 ),
+                               ),
                                p("Rose, J. M., Morse, R., & Schillaci, C. (2024). Development and application of an online tool to quantify nitrogen removal associated with harvest of cultivated eastern oysters. PLOS ONE, 19(9), e0310062. https://doi.org/10.1371/JOURNAL.PONE.0310062"
-                                 ),
+                               ),
                                p("Schutt, E., Francolini, R., Price, N., Olson, Z., & Byron, C. J. (2023). Supporting ecosystem services of habitat and biodiversity in temperate seaweed (Saccharina spp.) farms. Marine Environmental Research, 191, 106162. https://doi.org/10.1016/J.MARENVRES.2023.106162"
-                                 ),
+                               ),
                                br(),
                                h4("Disclaimer:"),
                                p("This is a scientific product and is not an official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government."
@@ -225,8 +256,8 @@ server <- function(input, output, session) {
     # gWWperM=(predict(biomass_model, weekin))*1000
     # DOY=yday(input$HarvestDate)
     day_of_year_shifted=ifelse(month(input$HarvestDate) < 12,
-                yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
-                yday(input$HarvestDate)        # Dec remains as is
+                               yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
+                               yday(input$HarvestDate)        # Dec remains as is
     )
     # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
     sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
@@ -257,6 +288,134 @@ server <- function(input, output, session) {
       rownames = TRUE
     )
   
+  OptTable <- reactive({
+    # S. latissima N content (g N /g dry weight)
+    dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
+    ft2m=0.3048 #convert feet (input length) to meter
+    day_of_year_shifted=ifelse(month(input$monthSlider) < 12,
+                               yday(input$monthSlider) + 365, # Shift Jan-Nov to after Dec
+                               yday(input$monthSlider)        # Dec remains as is
+    )
+    # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
+    sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy, se=F))
+    kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+    Ngam=predict(N_model, sdoy, se=F)
+    Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength2 * ft2m * 1000 # kg to g
+    #convert grams N to lbs
+    cnvrt=0.00220462 #ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
+    tNmodel=round((Nmodel*cnvrt),1)
+    Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
+    tBio=round((Bio.model*cnvrt),-1)
+    df=data.frame(matrix(c(tNmodel, Ngam*100, tBio), nrow=1, ncol=3))
+    colnames(df)=c("N removal (lbs)","Model N %", "Harvested Biomass (lbs)")
+    # row.names(df)=c("Nitrogen Removed:")
+    df
+  })
+  
+  output$OptimizeTable <-
+    renderTable(
+      OptTable(),
+      rownames = TRUE
+    )
+  
+  Nplot <- reactive({
+    # S. latissima N content (g N /g dry weight)
+    dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
+    ft2m=0.3048 #convert feet (input length) to meter
+    day_of_year_shifted=ifelse(month(input$monthSlider) < 12,
+                               yday(input$monthSlider) + 365, # Shift Jan-Nov to after Dec
+                               yday(input$monthSlider)        # Dec remains as is
+    )
+    # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
+    sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy, se=F))
+    kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+    Ngam=predict(N_model, sdoy, se=F)
+    Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength2 * ft2m * 1000 # kg to g
+    #convert grams N to lbs
+    cnvrt=0.00220462 #ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
+    tNmodel=round((Nmodel*cnvrt),1)
+    Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
+    tBio=round((Bio.model*cnvrt),-1)
+    # df=data.frame(matrix(c(tNmodel, Ngam*100, kgWWperM, tBio), nrow=1, ncol=4))
+    # colnames(df)=c("Estimate (lbs)","N (%DW)", "WW biomass (kg/m)", "Harvested Biomass (lbs)")
+    # df$var=input$monthSlider
+    # P1=ggplot(df, aes(x=var, y=tNmodel))+
+    #   geom_bar(stat="identity" , fill="firebrick", width = 0.65)+
+    #   theme_minimal()+
+    #   ylab("Pounds of N")+
+    #   xlab("Date")+
+    #   theme(axis.title.x = element_text(size = 16),
+    #         axis.text.x = element_text(size = 14),
+    #         axis.text.y = element_text(size = 14),
+    #         axis.title.y = element_text(size = 16))
+    # P1
+    
+    
+    # df=data.frame(matrix(c(tNmodel), nrow=1, ncol=1)) ### if not using second axis ---> NB
+    df=data.frame(matrix(c(tNmodel)/ 0.01, nrow=1, ncol=1)) ### note that N is being fit to second axis here ---> NB
+    colnames(df)="Pounds"
+    df$var="Nitrogen"
+    df=rbind(df, list(Pounds=tBio, var="Biomass" ))
+    # df=mutate(Pounds = ifelse(var == "Nitrogen", Pounds / 0.01, Variable)) 
+    P1=ggplot(df, aes(x=var, y=Pounds))+
+      geom_bar(stat="identity" , fill='firebrick4', width = 0.65)+
+      theme_minimal()+
+      scale_y_continuous(name="Biomass", sec.axis = sec_axis( transform=~ . * 0.01, name = "Nitrogen")) +
+      ylab("Pounds")+
+      xlab("Seaweed")+
+      theme(axis.title.x = element_text(size = 16),
+            axis.text.x = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            axis.title.y = element_text(size = 16))
+    P1
+  })
+  # Biomassplot <- reactive({
+  #   # S. latissima N content (g N /g dry weight)
+  #   dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
+  #   ft2m=0.3048 #convert feet (input length) to meter
+  #   day_of_year_shifted=ifelse(month(input$monthSlider) < 12,
+  #                              yday(input$monthSlider) + 365, # Shift Jan-Nov to after Dec
+  #                              yday(input$monthSlider)        # Dec remains as is
+  #   )
+  #   # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
+  #   sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+  #   biomass.mod=(predict(biomass_model, sdoy, se=F))
+  #   kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+  #   Ngam=predict(N_model, sdoy, se=F)
+  #   Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength2 * ft2m * 1000 # kg to g
+  #   #convert grams N to lbs
+  #   cnvrt=0.00220462 #ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
+  #   tNmodel=round((Nmodel*cnvrt),1)
+  #   Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
+  #   tBio=round((Bio.model*cnvrt),-1)
+  #   df=data.frame(matrix(c(tNmodel, Ngam*100, kgWWperM, tBio), nrow=1, ncol=4))
+  #   colnames(df)=c("Estimate (lbs)","N (%DW)", "WW biomass (kg/m)", "Harvested Biomass (lbs)")
+  #   df$var=input$monthSlider
+  #   P2=ggplot(df, aes(x=var, y=tBio))+
+  #     geom_bar(stat="identity" , fill="firebrick", width = 0.65)+
+  #     theme_minimal()+
+  #     ylab("Pounds of Seaweed")+
+  #     xlab("Date")+
+  #     theme(axis.title.x = element_text(size = 16),
+  #           axis.text.x = element_text(size = 14),
+  #           axis.text.y = element_text(size = 14),
+  #           axis.title.y = element_text(size = 16))
+  #   P2
+  # })
+  
+  # output$OptiBiomassplot <- 
+  #   renderPlot({
+  #     Biomassplot()
+  #   })
+  # 
+  output$OptiNplot <-
+    renderPlot({
+      Nplot()
+    })
+  
+  
   output$downloader <- 
     downloadHandler(
       paste0(Sys.Date(),"_Seaweed_Farm_Nitrogen_Report.pdf"),
@@ -272,7 +431,7 @@ server <- function(input, output, session) {
               Units=input$units, 
               Length=input$Hlength,
               Farm=input$farmname,
-              Date=input$Harvestdate,
+              Date=input$HarvestDate,
               table = table(),
               HLat=input$mymap_draw_new_feature$geometry$coordinates[[2]],
               HLon=input$mymap_draw_new_feature$geometry$coordinates[[1]]
