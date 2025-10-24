@@ -74,10 +74,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              br(),
                              # # radioButtons("extension", "Save As:",
                              # #              choices = c("png", "svg"), inline = TRUE),
-                             # downloadButton(
-                             #   outputId = "download",
-                             #   label = "Download Infographic"
-                             # ),
+                             downloadButton(
+                               outputId = "download",
+                               label = "Download Infographic"
+                             ),
                              downloadButton(
                                outputId = "downloader",
                                label = "Download PDF Report"
@@ -259,12 +259,6 @@ server <- function(input, output, session) {
     # g wet weight to g dry weight ratio 9:1
     dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
     ft2m=0.3048 #convert feet (input length) to meter
-    
-    # g WW / m of line (ESTIMATE NEEDS REVISION)
-    # gWWperM=5000 # use gam predict(kg/m) here
-    # GROWOUT_WEEK=week(input$HarvestDate)
-    # weekin=data.frame(GROWOUT_WEEK)
-    # gWWperM=(predict(biomass_model, weekin))*1000
     # DOY=yday(input$HarvestDate)
     day_of_year_shifted=ifelse(month(input$HarvestDate) < 12,
                                yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
@@ -350,18 +344,59 @@ server <- function(input, output, session) {
     renderPlot({
       fertilplot()
     })
+
+  infoplot <- reactive({
+    dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
+    ft2m=0.3048 #convert feet (input length) to meter
+    day_of_year_shifted=ifelse(month(input$HarvestDate) < 12,
+                               yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
+                               yday(input$HarvestDate)        # Dec remains as is
+    )
+    sdoy1=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy1, se=F))
+    kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+    Ngam=predict(N_model, sdoy1, se=F)
+    Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength * ft2m * 1000 # kg to g
+    #convert grams N to lbs
+    cnvrt=0.00220462
+    tNmodel=round((Nmodel*cnvrt),1)
+    nBags=round((tNmodel/5),1)
+    sqftlawns=round(tNmodel,0)*1000
+    img2<-readPNG("kelp_infographic_cropped.PNG")
+    #get size
+    h<-dim(img2)[1]
+    w<-dim(img2)[2]
+    par(mar=c(0,0,0,0), xpd=NA, mgp=c(0,0,0), oma=c(0,0,0,0), ann=F)
+    plot.new()
+    plot.window(0:1, 0:1)
+    QR1=png::readPNG("swd_qr1.png")
+    #fill plot with image
+    Z=rasterImage(img2, usr[1], usr[3], usr[2], usr[4])
+    text(0,0.65, "Nitrogen removed =", cex=1.1, col='#003366', pos=4)
+    text(0.15,.57, prettyNum(nBags, big.mark = ",", scientific = FALSE), cex=1.5, col='red')
+    text(0,.48, "50-lb bags of fertilizer*", cex=1.1, col='#003366', pos=4)
+    text(.35,.4, "Which is equal to:", cex=1.1, col='#003366', pos=4)
+    text(0.5,0.35, prettyNum(sqftlawns, big.mark = ",", scientific = FALSE), cex=1.5, col='red')
+    text(.35,.30, "sq. ft. of land fertilized**",cex=1.1, col='#003366', pos=4) 
+    text(0.3,.15, "* Based on fertilizer with 10% nitrogen content", cex=0.7, col='#003366', pos=4)
+    text(0.3,.1, "** Using 1-lb of nitrogen per 1000 sq. ft.", cex=0.7, col='#003366', pos=4)
+    text(0.5,0.98,"https://connect.fisheries.noaa.gov/SNRC/", cex=0.75, col='black', pos=4)
+    mtext(input$farmname, side=3, line=-1, outer=T, cex=ifelse(nchar(input$farmname)<40,1.3,1), font=2, col='black')
+    rasterImage(QR1,0,0,0.2,0.2) #xleft,ybottom,xright,ytop
+    Z
+  })
   
-  # ## save infographic to file
-  # output$download <- downloadHandler(
-  #   filename = paste0("Infographic_",Sys.Date(),".png"),
-  #   content = function(file) {
-  #     png(file, width = 1000,
-  #         height = 1000,
-  #         res = 200)
-  #     #fertilplot()
-  #     infoplot()
-  #     dev.off()
-  #   }) 
+  ## save infographic to file
+  output$download <- downloadHandler(
+    filename = paste0("Infographic_",Sys.Date(),".png"),
+    content = function(file) {
+      png(file, width = 1000,
+          height = 1000,
+          res = 200)
+      #fertilplot()
+      infoplot()
+      dev.off()
+    })
   
   OptTable <- reactive({
     # S. latissima N content (g N /g dry weight)

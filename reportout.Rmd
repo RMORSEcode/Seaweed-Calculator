@@ -83,7 +83,7 @@ knitr::kable(params[["table"]],
 
 
 # **Summary**
-Seaweed incorporate nutrients into their tissues as they grow. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction. The harvest of `r params$table[[6]]` `r params[["Units"]]` of seaweed is expected to result in the removal of a total of `r params$table[[3]]` pounds (lbs) of nitrogen from coastal Maine waters during the harvest period.
+Seaweed incorporate nutrients into their tissues as they grow. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction. The harvest of `r params$table[[2]]` `r params[["Units"]]` of seaweed is expected to result in the removal of a total of `r params$table[[1]]` pounds (lbs) of nitrogen from coastal Maine waters during the harvest period.
 
 # **Federal Regulatory Nexus:**  
 Public Interest Factor(s): (1)Water Quality; (2)General Environmental Concerns; (3) Fish and wildlife values.  
