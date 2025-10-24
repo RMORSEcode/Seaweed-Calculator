@@ -1,3 +1,5 @@
+# C:/Users/ryan.morse/Documents/GitHub/Seaweed-Calculator
+
 library(shiny)
 # library(shinyWidgets)
 library(leaflet)
@@ -68,10 +70,19 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              tableOutput("mytable"),
                              br(),
+                             plotOutput("fertplot", width="100%"),
+                             br(),
+                             # # radioButtons("extension", "Save As:",
+                             # #              choices = c("png", "svg"), inline = TRUE),
+                             # downloadButton(
+                             #   outputId = "download",
+                             #   label = "Download Infographic"
+                             # ),
                              downloadButton(
                                outputId = "downloader",
                                label = "Download PDF Report"
                              ),
+                             
                     ),
                     tabPanel("Harvest Optimizer",
                              tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
@@ -275,18 +286,82 @@ server <- function(input, output, session) {
     tNmodel=round((Nmodel*cnvrt),1)
     Bio.model=kgWWperM * 1000 * input$Hlength * ft2m
     tBio=round((Bio.model*cnvrt),-1)
-    df=data.frame(matrix(c(tNlo, tNhi, tNmodel, Ngam*100,  kgWWperM, tBio), nrow=1, ncol=6))
-    colnames(df)=c("Lo", "Hi", "Estimate (unit)","N (%DW)", "WW biomass (kg/m)", "Harvested Biomass (unit)")
+    # df=data.frame(matrix(c(tNlo, tNhi, tNmodel, Ngam*100,  kgWWperM, tBio), nrow=1, ncol=6))
+    # colnames(df)=c("Lo", "Hi", "Estimate (unit)","N (%DW)", "WW biomass (kg/m)", "Harvested Biomass (unit)")
+    # df=data.frame(matrix(c(tNmodel, tBio, Ngam*100,  kgWWperM), nrow=1, ncol=4))
+    # colnames(df)=c("N Removal (unit)","Harvested Biomass (unit)","Seaweed N (%DW)", "WW biomass (kg/m)")
+    df=data.frame(matrix(c(tNmodel, tBio), nrow=1, ncol=2))
+    colnames(df)=c("Nitrogen Removed","Harvested Biomass")
     df$Units=input$units
-    row.names(df)=c("Nitrogen Removed:")
+    # row.names(df)=c("Nitrogen Removed:")
     df
   })
   
   output$mytable <-
     renderTable(
-      table(),
-      rownames = TRUE
+      table()#,
+      # rownames = TRUE
     )
+  
+  # fertilplot <- function(){
+  fertilplot <- reactive({
+    dw2ww=0.083 #average from Gretchen 2018-2019  #previously estimate of 1/9 DW:WW
+    ft2m=0.3048 #convert feet (input length) to meter
+    day_of_year_shifted=ifelse(month(input$HarvestDate) < 12,
+                               yday(input$HarvestDate) + 365, # Shift Jan-Nov to after Dec
+                               yday(input$HarvestDate)        # Dec remains as is
+    )
+    sdoy1=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy1, se=F))
+    kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
+    Ngam=predict(N_model, sdoy1, se=F)
+    Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength * ft2m * 1000 # kg to g
+    #convert grams N to lbs
+    cnvrt=0.00220462
+    tNmodel=round((Nmodel*cnvrt),1)
+    nBags=round((tNmodel/5),1)
+    sqftlawns=round(tNmodel,0)*1000
+    img1<-readPNG("kelp_infographic_cropped.PNG")
+    #get size
+    h<-dim(img1)[1]
+    w<-dim(img1)[2]
+    par(mar=c(0,0,0,0), xpd=NA, mgp=c(0,0,0), oma=c(0,0,0,0), ann=F)
+    plot.new()
+    plot.window(0:1, 0:1)
+    #fill plot with image
+    usr<-par("usr")
+    F=rasterImage(img1, usr[1], usr[3], usr[2], usr[4])
+    text(0,.90, "Nitrogen removal", cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0,.80, "equal to:", cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0,.70, nBags, cex=3, col='red', pos=4)
+    text(0,.60, "50-lb bags", cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0,.50, "of fertilizer*, or", cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0,.40, sqftlawns, cex=3, col='red', pos=4)
+    text(0,.30, "square feet of",cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0,.20,"lawns fertilized**",cex=2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0.4,.15, "* Equivalency based on fertilizer", cex=1.2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0.4,.10, "with 10% nitrogen content", cex=1.2, col=rgb(.2,.2,.2,.7), pos=4)
+    text(0.4,.05,"** Using 1-lb of N per 1000 sq. ft.", cex=1.2, col=rgb(.2,.2,.2,.7), pos=4)
+    # text(0.0,0.0,"https://connect.fisheries.noaa.gov/ANRC/", cex=1.2, col='blue', pos=4)
+    F
+  })
+  
+  output$fertplot <-
+    renderPlot({
+      fertilplot()
+    })
+  
+  # ## save infographic to file
+  # output$download <- downloadHandler(
+  #   filename = paste0("Infographic_",Sys.Date(),".png"),
+  #   content = function(file) {
+  #     png(file, width = 1000,
+  #         height = 1000,
+  #         res = 200)
+  #     #fertilplot()
+  #     infoplot()
+  #     dev.off()
+  #   }) 
   
   OptTable <- reactive({
     # S. latissima N content (g N /g dry weight)
@@ -297,20 +372,19 @@ server <- function(input, output, session) {
                                yday(input$monthSlider)        # Dec remains as is
     )
     # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
-    sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
-    biomass.mod=(predict(biomass_model, sdoy, se=F))
+    sdoy2=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy2, se=F))
     kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
-    Ngam=predict(N_model, sdoy, se=F)
+    Ngam=predict(N_model, sdoy2, se=F)
     Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength2 * ft2m * 1000 # kg to g
     #convert grams N to lbs
     cnvrt=0.00220462 #ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
     tNmodel=round((Nmodel*cnvrt),1)
     Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
     tBio=round((Bio.model*cnvrt),-1)
-    df=data.frame(matrix(c(tNmodel, Ngam*100, tBio), nrow=1, ncol=3))
-    colnames(df)=c("N removal (lbs)","Model N %", "Harvested Biomass (lbs)")
-    # row.names(df)=c("Nitrogen Removed:")
-    df
+    df1=data.frame(matrix(c(tNmodel, Ngam*100, tBio), nrow=1, ncol=3))
+    colnames(df1)=c("N removal (lbs)","Model N %", "Harvested Biomass (lbs)")
+    df1
   })
   
   output$OptimizeTable <-
@@ -328,10 +402,10 @@ server <- function(input, output, session) {
                                yday(input$monthSlider)        # Dec remains as is
     )
     # doy=data.frame(DOY); colnames(doy)='day_of_year_shifted'# 0-365 for biomass model
-    sdoy=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
-    biomass.mod=(predict(biomass_model, sdoy, se=F))
+    sdoy2=data.frame(day_of_year_shifted) #December based start, +365 shifted after December for N model
+    biomass.mod=(predict(biomass_model, sdoy2, se=F))
     kgWWperM=exp(biomass.mod) # model prediction kg/m -> g/m
-    Ngam=predict(N_model, sdoy, se=F)
+    Ngam=predict(N_model, sdoy2, se=F)
     Nmodel=Ngam * dw2ww * kgWWperM * input$Hlength2 * ft2m * 1000 # kg to g
     #convert grams N to lbs
     cnvrt=0.00220462 #ifelse(input$units=="Pounds (lbs)",0.00220462,0.001)
