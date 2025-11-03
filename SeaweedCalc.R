@@ -57,8 +57,16 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              # dateInput("Htime", div(strong("Harvest date (yyyy-mm-dd):")), min=Sys.Date()-(5*365), max=Sys.Date(), startview = "month", width="100%"),
                              # dateRangeInput("Htime", div(strong("Period of harvest (yyyy-mm-dd):")), start=NULL, end=NULL, min=Sys.Date()-(5*365), max=Sys.Date(), startview = "month", width="100%"),
-                             dateInput("HarvestDate", div(strong("Date of harvest (yyyy-mm-dd):")), value = NULL, min=Sys.Date()-(5*365), max=Sys.Date(), format = "yyyy-mm-dd", startview = "month", width = "100%"),
-                             br(),
+                             dateInput("HarvestDate", div(strong("Date of harvest (yyyy-mm-dd):")), value =NULL , min=Sys.Date()-(5*365), max=Sys.Date(), format = "yyyy-mm-dd", startview = "year", width = "100%"),
+                             # sliderInput(
+                             #   inputId = "HarvestDate",
+                             #   label = "Date (Month-Day)",
+                             #   min = as.Date("2021-01-01"),
+                             #   max = as.Date("2021-07-31"),
+                             #   value = c(as.Date("2021-02-01")),
+                             #   timeFormat = "%m/%d",
+                             #   step=1
+                             # ),br(),
                              ## Units
                              radioButtons(
                                "units",
@@ -98,7 +106,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              sliderInput(
                                inputId = "monthSlider",
-                               label = "Range",
+                               label = "Date (Month-Day)",
                                min = as.Date("2021-01-01"),
                                max = as.Date("2021-07-31"),
                                value = c(as.Date("2021-02-01")),
@@ -130,14 +138,14 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tags$p(
                                h4("Background"),
                                helpText(strong("Excess nutrients in coastal waters"), style = "font-size:18px;"),
-                               p("Nitrogen (N) and phosphorus (P) are essential nutrients, but excess levels of these nutrients in coastal waters can lead to algal blooms, low oxygen concentrations, and other detrimental effects. Like all plants, seaweed incorporates nutrients into its tissue as it grows. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction."
+                               p("Nitrogen (N) is an essential nutrient, but excess levels of N in coastal waters can lead to algal blooms, low oxygen concentrations, and other detrimental effects. Like all plants, seaweed incorporates nutrients into its tissue as it grows. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction."
                                ),
                                tags$img(src='infographic.png', width = "100%", alt="This illustration shows a landscape in the background with agricultural fields, houses with lawns, and a river washing nutrients from those sources into an underwater scene in the foreground where the nitrogen is assimilated by plankton and seaweed."),
                                helpText(br()),
                                helpText(strong("The Seaweed Nutrient Removal Calculator"), style = "font-size:18px;"),
                                p("The calculator is a tool designed for seaweed farmers and resource managers to inform seaweed aquaculture permitting. Resource managers have expressed interest in easy-to-use tools that produce location and operation-appropriate values for the environmental benefits, or ecosystem services, seaweed farms provide. The calculator provides estimated values for nutrient removal in a format that aligns with the seaweed aquaculture permitting process."
                                ),
-                               p("The nutrient removal calculations are based on relationships of seaweed dry weight-to-length and the average nitrogen and phoshphorous concentrations in seaweed tissue. First, we estimate the weight of the seaweed based on the day of year it is harvested and typical growing conditions on a farm. The weight estimates are based on a non-linear generalized additive model output of biomass regressed on day of the year. Next, the nutrient portion of total seaweed weight is calculated using the output of  nitrogen concentration value for tissue. This result is scaled to the total biomass harvested, as input by the user based on length of line harvested and harvest date."
+                               p("The nutrient removal calculations are based on relationships of seaweed biomass and the average nitrogen concentration in seaweed for a given date of harvest. First, we estimate the weight of the seaweed based on the day of year it is harvested under typical conditions on a farm in the Gulf of Maine. The weight estimates are based on a non-linear generalized additive model output of biomass regressed on day of the year. Next, the nutrient portion of total seaweed weight is calculated using the output of nitrogen concentration value for tissue. This result is scaled to the total biomass harvested, as input by the user based on length of line harvested and harvest date."
                                ),
                                # p("We have synthesized available literature for eastern oyster farms across the Northeast region, from North Carolina to Maine, and applied methodology used by the Chesapeake Bay Program to calculate nutrient removal at harvest ",
                                #   tags$a(style="font-weight:bold", target="_blank", href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0310062",
@@ -157,7 +165,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tags$p(
                                h4("Project Team"),
                                tags$a(target="_blank", href="https://sites.une.edu/byronlab/", "Carrie Byron,"),
-                               tags$a(target="_blank", href="https://unity.edu/pineland/meet-the-team/#:~:text=Dr.%20Gretchen%20Grebe,and%20exploring%20outside.", "Gretchen Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
+                               tags$a(target="_blank", href="https://www.researchgate.net/profile/Gretchen-Grebe", "Gretchen Schott Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
                                tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
                                tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
                              ),
