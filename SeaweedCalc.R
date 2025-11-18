@@ -1,4 +1,5 @@
 # C:/Users/ryan.morse/Documents/GitHub/Seaweed-Calculator
+# https://test-connect.fisheries.noaa.gov/content/852a0e82-8e29-48d0-b98d-efae8ef07d35
 
 library(shiny)
 # library(shinyWidgets)
@@ -33,8 +34,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
-                                  p("This calculator predicts the amount of nitrogen farmed seaweed removes from the water when harvested, an important environmental benefit that seaweed aquaculture provides. This tool applies to kelp farms located within the Gulf of Maine, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
-                                  p("To use the tool, please fill in information about your farm in sections 1-2 below.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white"),
+                                  p("Seaweed can remove excess nitrogen from coastal waters, which is an important environmental benefit. This calculator predicts the amount of nitrogen removed at harvest by a seaweed farm. This tool was developed using data from the Gulf of Maine, USA, and can be applied to kelp farms located within this geographic region. As data from other species and locations becomes available, the tool can be updated and expanded in the future.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
+                                  p("To use the tool, please fill in information about an existing or proposed farm in sections 1-2 below.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white"),
                                   p("To download a report, click on ",strong("Download PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              helpText(br()),
                              
@@ -44,13 +45,13 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              textAreaInput("farmname", div(strong("Project Name:"), " Please enter the name of the farm"),value = "", width="100%", rows=1, placeholder = NULL),
                              helpText(br()),
                              textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=1, placeholder = NULL),
-                             helpText(h6("Farm Location: "),"Please scroll or pinch to zoom to the farm area, then click once on the marker pin and select the site to record the coordinates. To remove a marker, click on the trash icon and then the errant marker", style = "font-size:18px;"),
+                             helpText(h6("Farm Location: "),"Please scroll or pinch to zoom to the farm area, then click once on the marker pin and select the site to record the coordinates. To remove a marker, click on the trash icon and then click on the marker to be removed", style = "font-size:18px;"),
                              leafletOutput("mymap", width="100%", height=400),
                              ## Location table
                              tableOutput('loctable'),
                              helpText(br()),
                              ## Species
-                             selectInput("species", div(strong("Species:")," Please select the species of seaweed that was harvested"),c("Sugar kelp (Saccharina latissima)", "..."), width="100%"),
+                             selectInput("species", div(strong("Species:")," This tool is currently only available for sugar kelp, additional species will be added as data become available. Please select the species of seaweed that was harvested."),c("Sugar kelp (Saccharina latissima)", "..."), width="100%"),
                              ## Number
                              helpText(br()),
                              numericInput("Hlength", div(strong("Length of line harvested (ft):")," Please enter the total length in feet of line harvested at the selected size"), 0, min=0, max=NA, width="100%"),
@@ -70,7 +71,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ## Units
                              radioButtons(
                                "units",
-                               div(strong("Units:")," Select the units for nutrient removal"),
+                               div(strong("Units:")," Select the units for nitrogen removal"),
                                choices =c("Pounds (lbs)", "Kilograms (kg)"),
                                selected ="Pounds (lbs)",
                                inline = T,
@@ -98,7 +99,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              ### add text box with black border ### "border-style: solid; border-color: gray; background-color: #838B8B;"
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
-                                  p("The Harvest optimizer predicts the amount of nitrogen removed from Maine, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("Published data indicates that nitrogen concentration in kelp varies seasonally. The Harvest optimizer predicts the amount of nitrogen removed from the Gulf of Maine, USA, based on harvest date.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p("To use the tool, please enter a length of line to harvest and drag the date slider to see how the amount of nitrogen removed varies with time.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;")),
                              helpText(br()),
                              helpText(br()),
@@ -128,8 +129,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
-                                  p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
-                                  p("The Seaweed Nutrient Removal Calculator can be used for new permit applications based on estimated production value, or to provide information on existing farms from actual harvest numbers. The grower provides information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("About this Tool:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
+                                  p("The Seaweed Nutrient Removal Calculator can be used to generate nitrogen removal estimates for permit applications for new or expanding farms by estimating farmed kelp production at the prospective site, or to provide information on nitrogen removed at an existing kelp farm using actual harvest numbers. The grower provides information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- The date of harvest"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- The length of line harvested"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p("- Farm location will be included as inputs for use in generating the report, but will not affect the calculation.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
@@ -138,15 +139,18 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tags$p(
                                h4("Background"),
                                helpText(strong("Excess nutrients in coastal waters"), style = "font-size:18px;"),
-                               p("Nitrogen (N) is an essential nutrient, but excess levels of N in coastal waters can lead to algal blooms, low oxygen concentrations, and other detrimental effects. Like all plants, seaweed incorporates nutrients into its tissue as it grows. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality in the form of excess nutrient reduction."
+                               p("Nitrogen (N) is an essential nutrient, but excess levels of N in coastal waters can lead to algal blooms, low oxygen concentrations, fish kills, and other detrimental effects. Like all primary producers, seaweed incorporates nutrients into its tissue as it grows. At harvest, these nutrients are permanently removed from the coastal environment, providing a benefit to water quality and coastal communities. Nitrogen is also an indicator of protein content in seaweed, which may contribute to product quality or nutritional capacity."
                                ),
                                tags$img(src='infographic.png', width = "100%", alt="This illustration shows a landscape in the background with agricultural fields, houses with lawns, and a river washing nutrients from those sources into an underwater scene in the foreground where the nitrogen is assimilated by plankton and seaweed."),
-                               helpText(br()),
+                               br(),
                                helpText(strong("The Seaweed Nutrient Removal Calculator"), style = "font-size:18px;"),
                                p("The calculator is a tool designed for seaweed farmers and resource managers to inform seaweed aquaculture permitting. Resource managers have expressed interest in easy-to-use tools that produce location and operation-appropriate values for the environmental benefits, or ecosystem services, seaweed farms provide. The calculator provides estimated values for nutrient removal in a format that aligns with the seaweed aquaculture permitting process."
                                ),
-                               p("The nutrient removal calculations are based on relationships of seaweed biomass and the average nitrogen concentration in seaweed for a given date of harvest. First, we estimate the weight of the seaweed based on the day of year it is harvested under typical conditions on a farm in the Gulf of Maine. The weight estimates are based on a non-linear generalized additive model output of biomass regressed on day of the year. Next, the nutrient portion of total seaweed weight is calculated using the output of nitrogen concentration value for tissue. This result is scaled to the total biomass harvested, as input by the user based on length of line harvested and harvest date."
+                               p("The nitrogen removal calculations are based on published data measuring seaweed biomass and the average nitrogen concentration in seaweed over a range of harvest dates. This tool estimates the weight and nitrogen concentration of the seaweed based on the day of year it is harvested under typical conditions on a farm in the Gulf of Maine. The weight estimates are based on non-linear generalized additive model (GAM) output of biomass regressed on day of the year. Similarly, the nitrogen concentration estiamte is based on GAM output of nitrogen concentration regressed on day of the year. Finally, the nitrogen concentration is multiplied by a dry-weight to wet-weight conversion factor,  the total kelp biomass, and the length of line harvested to obtain the amount of nitrogen removed."
                                ),
+                               br(),
+                               tags$img(src='schema.png', width = "100%", alt="Inforgraphic showing calculator development and data processing"),
+                               
                                # p("We have synthesized available literature for eastern oyster farms across the Northeast region, from North Carolina to Maine, and applied methodology used by the Chesapeake Bay Program to calculate nutrient removal at harvest ",
                                #   tags$a(style="font-weight:bold", target="_blank", href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0310062",
                                #          "(Rose et al. 2024)."),
@@ -166,6 +170,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                h4("Project Team"),
                                tags$a(target="_blank", href="https://sites.une.edu/byronlab/", "Carrie Byron,"),
                                tags$a(target="_blank", href="https://www.researchgate.net/profile/Gretchen-Grebe", "Gretchen Schott Grebe,"), #https://www.linkedin.com/in/gretchen-schott-grebe/
+                               tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/renee-mercaldo-allen", "Renee Mercaldo-Allen"),
                                tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
                                tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
                              ),
@@ -479,7 +484,7 @@ server <- function(input, output, session) {
     P1=ggplot(df, aes(x=var, y=Pounds))+
       geom_bar(stat="identity" , fill='firebrick4', width = 0.65)+
       theme_minimal()+
-      scale_y_continuous(name="Biomass", sec.axis = sec_axis( transform=~ . * 0.01, name = "Nitrogen")) +
+      scale_y_continuous(name="Biomass (lbs)", sec.axis = sec_axis( transform=~ . * 0.01, name = "Nitrogen (lbs)")) +
       ylab("Pounds")+
       xlab("Seaweed")+
       theme(axis.title.x = element_text(size = 16),
