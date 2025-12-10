@@ -431,7 +431,7 @@ server <- function(input, output, session) {
     Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
     tBio=round((Bio.model*cnvrt),-1)
     df1=data.frame(matrix(c(tNmodel, Ngam*100, tBio), nrow=1, ncol=3))
-    colnames(df1)=c("N removal (lbs)","Model N %", "Harvested Biomass (lbs)")
+    colnames(df1)=c("N removal (lbs)","Model N %", "Harvest Biomass (lbs)")
     df1
   })
   
