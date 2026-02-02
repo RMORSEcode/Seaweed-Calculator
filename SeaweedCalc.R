@@ -1,5 +1,8 @@
 # C:/Users/ryan.morse/Documents/GitHub/Seaweed-Calculator
+## test site for NOAA internal only
 # https://test-connect.fisheries.noaa.gov/content/852a0e82-8e29-48d0-b98d-efae8ef07d35
+## tool for public release (locked down until publication):
+# https://connect.fisheries.noaa.gov/SNRC/
 
 library(shiny)
 # library(shinyWidgets)
@@ -36,7 +39,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("Seaweed can remove excess nitrogen from coastal waters, which is an important environmental benefit. This calculator predicts the amount of nitrogen removed at harvest by a seaweed farm. This tool was developed using data from the Gulf of Maine, USA, and can be applied to kelp farms located within this geographic region. As data from other species and locations becomes available, the tool can be updated and expanded in the future.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
                                   p("To use the tool, please fill in information about an existing or proposed farm in sections 1-2 below.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white"),
-                                  p("To download a report, click on ",strong("Download PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
+                                  # p("To download a report, click on ",strong("Download PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white"),
+                                  ),
                              helpText(br()),
                              
                              ### 1 FARM PRACTICES ###

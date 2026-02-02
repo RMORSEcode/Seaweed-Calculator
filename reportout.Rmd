@@ -62,7 +62,6 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 `r params[["Location"]]`  
 
 **Farm location (latitude, longitude):**  
-`r c(params[["HLat"]], params[["HLon"]])`  
 `r params[["HLat"]]`, `r params[["HLon"]]`  
 
 **Seaweed Species:**  
@@ -71,7 +70,7 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 **Harvest Date (YYYY-MM-DD):**  
 `r params[["Date"]]`  
 
-**Length of Line Harvested:**  
+**Length of Line Harvested (ft):**  
 `r params[["Length"]]`  
 
 
@@ -91,11 +90,20 @@ Public Interest Factor(s): (1)Water Quality; (2)General Environmental Concerns; 
 Rivers and Harbors Act Section 10 public interest review factors related to water quality, general environmental concerns and fish and wildlife values. Clean Water Act Section 303 provisions related to managing nutrient pollution in the Waters of the U.S.; Magnuson-Stevens Act provisions related to Essential Fish Habitat; The Fish and Wildlife Coordination Act provisions related to the development of measures to protect, develop, and improve wildlife and their habitat.  
 
 # **Data Contributors**  
+ME: Gretchen Grebe, Carrie Byron *University of Maine*  
 
 
 
 # **Supporting Literature**  
+- Bolduc, W., Griffin, R.M. & Byron, C.J. Consumer willingness to pay for farmed seaweed with education on ecosystem services. J Appl Phycol 35, 911–919 (2023). https://doi.org/10.1007/s10811-023-02914-3  
 
+- Grebe, G. S., Byron, C. J., Brady, D. C., St. Gelais, A. T., & Costa-Pierce, B. A. (2021). The effect of distal-end trimming on Saccharina latissima morphology, composition, and productivity. Journal of the World Aquaculture Society, 52(5), 1081–1098. https://doi.org/10.1111/jwas.12814  
+
+-Grebe, G.S., Byron, C.J., Brady, D.C. et al. The nitrogen bioextraction potential of nearshore Saccharina latissima cultivation and harvest in the Western Gulf of Maine. J Appl Phycol 33, 1741–1757 (2021). https://doi.org/10.1007/s10811-021-02367-6  
+
+- Rose, J.M., Morse, R.E., and C. Schillaci. (2024). Development and application of an online tool to quantify nitrogen removal associated with harvest of cultivated eastern oysters. PLoS ONE 19(9): e0310062.  
+
+- Schutt, E., Francolini, R., Price, N., Olson, Z., & Byron, C. J. (2023). Supporting ecosystem services of habitat and biodiversity in temperate seaweed (Saccharina spp.) farms. Marine Environmental Research, 191, 106162. https://doi.org/10.1016/J.MARENVRES.2023.106162  
 
 
 # **Disclaimer**  
