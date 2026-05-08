@@ -90,7 +90,7 @@ Public Interest Factor(s): (1)Water Quality; (2)General Environmental Concerns; 
 Rivers and Harbors Act Section 10 public interest review factors related to water quality, general environmental concerns and fish and wildlife values. Clean Water Act Section 303 provisions related to managing nutrient pollution in the Waters of the U.S.; Magnuson-Stevens Act provisions related to Essential Fish Habitat; The Fish and Wildlife Coordination Act provisions related to the development of measures to protect, develop, and improve wildlife and their habitat.  
 
 # **Data Contributors**  
-ME: Gretchen Grebe, Carrie Byron *University of Maine*  
+ME: Gretchen Grebe, Carrie Byron *University of New England*  
 
 
 

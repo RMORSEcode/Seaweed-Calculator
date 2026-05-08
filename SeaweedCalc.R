@@ -31,7 +31,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                   tabsetPanel(
                     type = "tabs",
                     tabPanel("Calculator", 
-                             tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
+                             tags$img(src='landing1c.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
                              titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
                              helpText(br()),
                              
@@ -98,7 +98,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                     ),
                     tabPanel("Harvest Optimizer",
-                             tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
+                             tags$img(src='landing4.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
                              titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
                              helpText(br()),
                              ### add text box with black border ### "border-style: solid; border-color: gray; background-color: #838B8B;"
@@ -129,7 +129,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                     ),
                     
                     tabPanel("About", 
-                             tags$img(src='landing1.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
+                             tags$img(src='landing3c.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, University of New England logo, and a grower harvesting kelp"),
                              titlePanel(h1("Seaweed Nutrient Removal Calculator"), windowTitle = "Seaweed Nutrient Removal Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
@@ -150,7 +150,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                helpText(strong("The Seaweed Nutrient Removal Calculator"), style = "font-size:18px;"),
                                p("The calculator is a tool designed for seaweed farmers and resource managers to inform seaweed aquaculture permitting. Resource managers have expressed interest in easy-to-use tools that produce location and operation-appropriate values for the environmental benefits, or ecosystem services, seaweed farms provide. The calculator provides estimated values for nutrient removal in a format that aligns with the seaweed aquaculture permitting process."
                                ),
-                               p("The nitrogen removal calculations are based on published data measuring seaweed biomass and the average nitrogen concentration in seaweed over a range of harvest dates. This tool estimates the weight and nitrogen concentration of the seaweed based on the day of year it is harvested under typical conditions on a farm in the Gulf of Maine. The weight estimates are based on non-linear generalized additive model (GAM) output of biomass regressed on day of the year. Similarly, the nitrogen concentration estiamte is based on GAM output of nitrogen concentration regressed on day of the year. Finally, the nitrogen concentration is multiplied by a dry-weight to wet-weight conversion factor,  the total kelp biomass, and the length of line harvested to obtain the amount of nitrogen removed."
+                               p("The nitrogen removal calculations are based on published data measuring seaweed biomass and the average nitrogen concentration in seaweed over a range of harvest dates. This tool estimates the weight and nitrogen concentration of the seaweed based on the day of year it is harvested under typical conditions on a farm in the Gulf of Maine. The weight estimates are based on non-linear generalized additive model (GAM) output of biomass regressed on day of the year. Similarly, the nitrogen concentration estiamte is based on GAM output of nitrogen concentration regressed on day of the year. Finally, the nitrogen concentration is multiplied by a dry-weight to wet-weight conversion factor, the total kelp biomass, and the length of line harvested to obtain the amount of nitrogen removed."
                                ),
                                br(),
                                tags$img(src='schema.png', width = "100%", alt="Inforgraphic showing calculator development and data processing"),
@@ -387,6 +387,7 @@ server <- function(input, output, session) {
     plot.new()
     plot.window(0:1, 0:1)
     QR1=png::readPNG("swd_qr1.png")
+    usr<-par("usr")    
     #fill plot with image
     Z=rasterImage(img2, usr[1], usr[3], usr[2], usr[4])
     text(0,0.65, "Nitrogen removed =", cex=1.1, col='#003366', pos=4)
@@ -434,15 +435,16 @@ server <- function(input, output, session) {
     tNmodel=round((Nmodel*cnvrt),1)
     Bio.model=kgWWperM * 1000 * input$Hlength2 * ft2m
     tBio=round((Bio.model*cnvrt),-1)
-    df1=data.frame(matrix(c(tNmodel, Ngam*100, tBio), nrow=1, ncol=3))
-    colnames(df1)=c("N removal (lbs)","Model N %", "Harvest Biomass (lbs)")
+    df1=data.frame(matrix(c(tBio, tNmodel, Ngam*100), nrow=1, ncol=3))
+    colnames(df1)=c("Kelp Wet Biomass (lbs)","N Removal (lbs)","Kelp N Content (%DW)")
+    rownames(df1)="Model"
     df1
   })
   
   output$OptimizeTable <-
     renderTable(
       OptTable(),
-      rownames = TRUE
+      rownames = F
     )
   
   Nplot <- reactive({
@@ -485,10 +487,13 @@ server <- function(input, output, session) {
     df$var="Nitrogen"
     df=rbind(df, list(Pounds=tBio, var="Biomass" ))
     # df=mutate(Pounds = ifelse(var == "Nitrogen", Pounds / 0.01, Variable)) 
-    P1=ggplot(df, aes(x=var, y=Pounds))+
-      geom_bar(stat="identity" , fill='firebrick4', width = 0.65)+
+    P1=ggplot(df, aes(x=var, y=Pounds, fill=var))+
+      geom_col(stat="identity", width = 0.65)+
+      # geom_col(stat="identity", fill='firebrick4', width = 0.65)+
+      scale_fill_manual(values = alpha(c("steelblue","firebrick4"), 1))+
       theme_minimal()+
       scale_y_continuous(name="Biomass (lbs)", sec.axis = sec_axis( transform=~ . * 0.01, name = "Nitrogen (lbs)")) +
+      theme(legend.position = "none")+
       ylab("Pounds")+
       xlab("Seaweed")+
       theme(axis.title.x = element_text(size = 16),
