@@ -104,7 +104,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ### add text box with black border ### "border-style: solid; border-color: gray; background-color: #838B8B;"
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("Published data indicates that nitrogen concentration in kelp varies seasonally. The Harvest optimizer predicts the amount of nitrogen removed from the Gulf of Maine, USA, based on harvest date.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p("To use the tool, please enter a length of line to harvest and drag the date slider to see how the amount of nitrogen removed varies with time.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;")),
+                                  p("To use the tool, please enter a length of line to harvest and drag the date slider to see how the amount of nitrogen removed varies with time.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("Model output are shown for kelp wet biomass (lbs), nitrogen removal at harvest (lbs), and the kelp nitrogen content as a percent of dry weight (%DW).", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;")),
                              helpText(br()),
                              helpText(br()),
                              numericInput("Hlength2", div(strong("Length of line harvested (ft):")," Please enter the total length in feet of line harvested at the selected size"), 0, min=0, max=NA, width="100%"),
@@ -488,7 +489,7 @@ server <- function(input, output, session) {
     df=rbind(df, list(Pounds=tBio, var="Biomass" ))
     # df=mutate(Pounds = ifelse(var == "Nitrogen", Pounds / 0.01, Variable)) 
     P1=ggplot(df, aes(x=var, y=Pounds, fill=var))+
-      geom_col(stat="identity", width = 0.65)+
+      geom_col(width = 0.65)+
       # geom_col(stat="identity", fill='firebrick4', width = 0.65)+
       scale_fill_manual(values = alpha(c("steelblue","firebrick4"), 1))+
       theme_minimal()+
